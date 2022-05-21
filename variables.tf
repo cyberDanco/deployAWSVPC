@@ -1,4 +1,4 @@
 variable "environment_tag" {
-    description = "Environment tag"
-    default = "Production"
+  description = "Environment tag"
+  default     = "Production"
 }
