@@ -64,7 +64,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "main"
+    Name = "public"
   }
 }
 
@@ -94,6 +94,13 @@ resource "aws_route_table" "private" {
   tags = {
     Name = "private${count.index}"
   }
+}
+
+resource "aws_route_table_association" "rta-1" {
+  count = 2
+
+  subnet_id 	 = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
 }
 
 resource "aws_security_group" "sg_22" {
