@@ -23,7 +23,7 @@ locals {
 }
 
 resource "aws_subnet" "public" {
-  count = 2
+  count = length(local.public_cidr)
 
   vpc_id     = aws_vpc.main.id
   cidr_block = local.public_cidr[count.index]
@@ -34,7 +34,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count = 2
+  count = length(local.private_cidr)
 
   vpc_id     = aws_vpc.main.id
   cidr_block = local.private_cidr[count.index]
@@ -53,12 +53,12 @@ resource "aws_internet_gateway" "main" {
 }
 
 resource "aws_eip" "nat" {
-  count = 2
+  count = length(local.public_cidr)
   vpc   = true
 }
 
 resource "aws_nat_gateway" "main" {
-  count = 2
+  count = length(local.public_cidr)
 
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
@@ -82,7 +82,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table" "private" {
-  count = 2
+  count = length(local.private_cidr)
 
   vpc_id = aws_vpc.main.id
 
@@ -97,14 +97,14 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "rta-public1" {
-  count = 2
+  count = length(local.public_cidr)
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table_association" "rta-private1" {
-  count = 2
+  count = length(local.private_cidr)
 
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
@@ -119,7 +119,7 @@ resource "aws_security_group" "sg_22" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["12.161.86.130/32"]
   }
 
   egress {
