@@ -12,9 +12,18 @@ provider "aws" {
   region = "us-east-1"
 }
 
+variable "env_code" {
+  type = string
+  default="envNameTag"
+}
+
 # Create a VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
+
+  tags = {
+    Name = "${var.env_code}-vpc"
+  }
 }
 
 locals {
@@ -29,7 +38,7 @@ resource "aws_subnet" "public" {
   cidr_block = local.public_cidr[count.index]
 
   tags = {
-    Name = "public${count.index}"
+    Name = "${var.env_code}-publicSubnet${count.index}"
   }
 }
 
@@ -40,7 +49,8 @@ resource "aws_subnet" "private" {
   cidr_block = local.private_cidr[count.index]
 
   tags = {
-    Name = "private${count.index}"
+    #Name = "private${count.index}"
+    Name = "${var.env_code}-privateSubnet${count.index}"
   }
 }
 
@@ -48,13 +58,17 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "main"
+    #Name = "main"
+    Name = "${var.env_code}-internetGateway"
   }
 }
 
 resource "aws_eip" "nat" {
   count = length(local.public_cidr)
   vpc   = true
+  tags = {
+    Name = "${var.env_code}-eip"
+  }
 }
 
 resource "aws_nat_gateway" "main" {
@@ -64,7 +78,8 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "public"
+    #Name = "public"
+    Name = "${var.env_code}-NatGatewayPublic"
   }
 }
 
@@ -77,7 +92,8 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "public"
+    #Name = "public"
+    Name = "${var.env_code}-publicRouteTable"
   }
 }
 
@@ -92,7 +108,8 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "private${count.index}"
+    #Name = "private${count.index}"
+    Name = "${var.env_code}-privateRouteTable${count.index}"
   }
 }
 
@@ -101,6 +118,9 @@ resource "aws_route_table_association" "rta-public1" {
 
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
+
+  #    Name = "${var.env_code}-routeTableAssociation-Public"
+  
 }
 
 resource "aws_route_table_association" "rta-private1" {
@@ -108,6 +128,9 @@ resource "aws_route_table_association" "rta-private1" {
 
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
+  
+  #Name = "${var.env_code}-routeTableAssociation-Private"
+  
 }
 
 resource "aws_security_group" "sg_22" {
@@ -131,5 +154,6 @@ resource "aws_security_group" "sg_22" {
 
   tags = {
     "Environment" = "${var.environment_tag}"
+    Name = "${var.env_code}-securityGroup"
   }
 }
