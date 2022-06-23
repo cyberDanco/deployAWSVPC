@@ -59,6 +59,7 @@ resource "aws_internet_gateway" "main" {
 resource "aws_eip" "nat" {
   count = length(local.public_cidr)
   vpc   = true
+  
   tags = {
     Name = "${var.environment_tag}-eip"
   }
