@@ -2,7 +2,7 @@ resource "aws_instance" "public" {
     ami                         = "ami-0b5eea76982371e91"
     associate_public_ip_address = true
     instance_type               = "t3.micro"
-    key_name                    = "myMac"
+    key_name                    = "main"
     vpc_security_group_ids      = [aws_security_group.public.id]
     subnet_id                   = aws_subnet.public[0].id
     
